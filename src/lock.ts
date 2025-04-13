@@ -7,7 +7,10 @@ import { LockModes } from './lock-modes';
  * @param mode mode of locking
  *
  */
-export function Lock(getResourceKey: (...args: any[]) => string | number | null, mode: LockModes) {
+export function Lock<T extends (...args: any[]) => Promise<any>>(
+  getResourceKey: (...args: Parameters<T>) => string | number | null,
+  mode: LockModes,
+) {
   return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
     const locks: { [lockedResourceKey: string]: Promise<any> } = {};
@@ -15,7 +18,7 @@ export function Lock(getResourceKey: (...args: any[]) => string | number | null,
 
     switch (mode) {
       case LockModes.SHARE_RESULT:
-        descriptor.value = function (...args: any[]) {
+        descriptor.value = function (...args: Parameters<T>) {
           const resourceKey = getResourceKey(...args) ?? randomUUID();
           const lockedResourceKey = buildLockKey(resourceKey);
 
@@ -39,7 +42,7 @@ export function Lock(getResourceKey: (...args: any[]) => string | number | null,
         break;
 
       case LockModes.QUEUE:
-        descriptor.value = function (...args: any[]) {
+        descriptor.value = function (...args: Parameters<T>) {
           const resourceKey = getResourceKey(...args) ?? randomUUID();
           const lockedResourceKey = buildLockKey(resourceKey);
 
