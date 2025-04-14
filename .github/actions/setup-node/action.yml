@@ -1,0 +1,15 @@
+name: Setup-Node
+description: 'Cache, Install dependencies'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+    - uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ hashFiles('package-lock.json') }}
+    - run: npm ci
+      shell: bash
